@@ -1,0 +1,2 @@
+#!/bin/bash
+python /mnt/disk/workspace/src/finance/getprice.py sh 002527 002029 000063 002574 600489 002269 601857 601398 600116 002768 002536
