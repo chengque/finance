@@ -2,6 +2,10 @@
 import matplotlib.pyplot as plt
 import tushare as ts
 import sys
+import numpy
+import talib
+from talib import MA_Type
+import pandas as pd;
     
 def plotstock(name,realname=u'代码'):
     quotes = ts.get_hist_data(name)
@@ -11,6 +15,9 @@ def plotstock(name,realname=u'代码'):
     quotes.sort_index(inplace=True)
     sh.sort_index(inplace=True)
     opens = quotes["open"]
+    close = numpy.random.random(100)
+    upper,middle,lower=talib.BBANDS(opens.values,20,2,2)
+    boll=pd.DataFrame({"upper":upper,"middle":middle,"lower":lower},index=opens.index);
     opensh=sh["open"]
     means=sum(opens)/len(opens)
     meansh=sum(opensh)/len(opensh)
@@ -20,6 +27,10 @@ def plotstock(name,realname=u'代码'):
     quotes["open"].plot()
     sh["open"]=sh["open"]/scale
     sh["open"].plot()
+    boll["upper"].plot()
+    boll["middle"].plot()
+    boll["lower"].plot()
+    
     stockbasis=ts.get_stock_basics()
     realname=stockbasis[stockbasis.index==name].name[0]
     print realname
