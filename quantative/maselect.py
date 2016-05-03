@@ -12,14 +12,16 @@ import datetime;
     
 def evalstock(name,date):
     res=[]; res.append(False)
+    if(not ll.existlocal(name)):
+        return
     quotesr = ll.readstock(name)
     quotesr.sort_index(inplace=True)
     quotes=quotesr[quotesr.index.values<np.datetime64(date)]
     close = quotes["close"]
-    ma5=talib.MA(close.values,5)
-    ma12=talib.MA(close.values,12)
+    ma5=talib.MA(close.values,3)
+    ma12=talib.MA(close.values,10)
     ma30=talib.MA(close.values,24)
-    ma90=talib.MA(close.values,40)
+    ma90=talib.MA(close.values,60)
     mav=pd.DataFrame({"ma5":ma5,"ma15":ma12,"ma30":ma30,"ma90":ma90},index=close.index);
     r0=ma90[-1]/ma90[-20]
     r1=ma5[-1]/ma90[-1]
@@ -31,7 +33,7 @@ def evalstock(name,date):
     delta=nd-date
 
 
-    if(r0<0.98 and r1<0.95 and r2>0.95 and r3>0.95 and r4<0.95 and r5<1):
+    if(r0>0.8 and r1<0.95 and r2>0.95 and r3>0.98 and r4<0.9 and r5<1):
         res[0]=(True)
         res.append(name)
         res.append(close[-1])
@@ -44,18 +46,23 @@ def evalstock(name,date):
         pf4=0
         pf5=0
         pf6=0
-        if(delta.days>90):
+        if(delta.days>5):
             quotes5=priceafter(quotesr,date,5)
-            quotes10=priceafter(quotesr,date,10)
-            quotes15=priceafter(quotesr,date,15)
-            quotes30=priceafter(quotesr,date,30)
-            quotes60=priceafter(quotesr,date,60)
-            quotes90=priceafter(quotesr,date,90)
             pf1=(quotes5-close[-1])/close[-1]
+        if(delta.days>10):
+            quotes10=priceafter(quotesr,date,10)
             pf2=(quotes10-close[-1])/close[-1]
+        if(delta.days>15):
+            quotes15=priceafter(quotesr,date,15)
             pf3=(quotes15-close[-1])/close[-1]
+        if(delta.days>30):
+            quotes30=priceafter(quotesr,date,30)
             pf4=(quotes30-close[-1])/close[-1]
+        if(delta.days>60):
+            quotes60=priceafter(quotesr,date,60)
             pf5=(quotes60-close[-1])/close[-1]
+        if(delta.days>90):
+            quotes90=priceafter(quotesr,date,90)
             pf6=(quotes90-close[-1])/close[-1]
         res.append(pf1)
         res.append(pf2)
@@ -80,7 +87,7 @@ def scanall(date):
     lpe=lstock.pe
     num=len(lnum)
     mres=[];
-    for i in range(0,1000):
+    for i in range(0,num):
         try:
             print "Processing:"+str(lnum[i])+"-"+lname[i]+" "+str(i)+"/"+str(num)
             res=evalstock(lnum[i],date)
@@ -95,5 +102,8 @@ def scanall(date):
         print ("%6s %6.2f %.2f %.2f %.2f %4.2f %4.2f %4.2f %4.2f %4.2f %4.2f %4.2f %10s"%(m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8],m[9],m[10],m[11],m[12],m[13]))
 
 if __name__ == "__main__":
-    print sys.argv[1]
-    scanall(datetime.datetime(int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3]),0,0))
+    endate=datetime.datetime.now()
+        
+    if(len(sys.argv)>3):
+        endate=datetime.datetime(int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3]),0,0)
+    scanall(endate)
